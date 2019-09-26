@@ -2,7 +2,7 @@
 #include <rand.h>
 #include "Initial_Load.c"
 #include "Tiles.c"
-#include "Sprites.c"
+#include "Sprites.c"// contains all of the sprites
 
 typedef struct Asteroid {
 	UINT8 x;
@@ -31,7 +31,6 @@ typedef struct Explosion {
 	bool flag;
 }Explosion;
 
-// The guide has methods up here for some reason? Just went with it and it works so idk if its required
 void init();
 void checkInput();
 void moveLaser();
@@ -40,38 +39,32 @@ void checkCollisions();
 void updateSwitches();
 bool collisionCheck(UINT8, UINT8, UINT8, UINT8, UINT8);
 
-
-//GLobals
+//Globals
 Player player;// the x/y of the ship
 Laser laser;// the x/y of the laser
 Explosion explosion;
 UINT8 Asteroid_Sprites = 0;// Use this for keeping sprite total under 20
-UINT8 i = 0;// did not like me making this in init so.. it stays
+UINT8 i = 0;
 UINT8 j = 0;
 UINT8 score = 0;
 UINT8 upDown = 0;
 UINT8 tick = 0;
 Asteroid Asteroids[16];
 
-
-
-// working (put your stuff here and/or in methods)
+// working
 void main() {
 	init();	
 	while(1) {		
 		checkInput();
 		updateSwitches();
 		wait_vbl_done();
-
 		moveAstroids();
 		moveLaser();
 		checkCollisions();
-		// Game code here
-
 	}// end of while
 }// end of main
 
-//working (change here)
+//working (don't change)
 void init() {
 	DISPLAY_ON;		// Turn on the display
 	//NR52_REG = 0x8F;	// Turn on the sound
@@ -147,7 +140,7 @@ void checkInput() {
 
 //working (don't change)
 void moveLaser() {
-	if (laser.fired == True && laser.x > 3) { //&& collisionCheck(laser.y, laser[2]) != 1) {// if the laser has been laser.fired and its not off the screen and it isnt hitting an asteroid
+	if (laser.fired == True && laser.x > 3) {// if the laser has been laser.fired and its not off the screen and it isnt hitting an asteroid
 		laser.x -= 3;
 	}
 	else if (laser.fired == True && laser.x <= 3) {// if the laser has been laser.fired and its going off screen
@@ -159,7 +152,7 @@ void moveLaser() {
 
 	move_sprite(3, laser.x, laser.y);
 }
-
+//working (don't change)
 void moveAstroids() {
 	
 	if (score > 30)
@@ -181,13 +174,11 @@ void moveAstroids() {
 	}
 	
 }
-
+// working (don't change)
 void checkCollisions()
 {
-	//Not working because the Asteroid array doesnt exist yet
-
 	i = 0;
-	while (i < 16) {
+	while (i < 16) {// checks all asteroids (20 - (3 for ship and 1 for laser) leaves 16 because 20 is the sprite max)
 		if (collisionCheck(player.x, (player.y), 14, Asteroids[i].x, Asteroids[i].y) == True) {
 			set_sprite_tile(0, 7);
 			set_sprite_tile(1, 4);// ship goes boom
@@ -198,38 +189,36 @@ void checkCollisions()
 			score++;
 			Asteroids[i].x = (rand() & 12) + 8;
 			Asteroids[i].y = (rand() & 112) + 32;
-			move_sprite((i + 4), Asteroids[i].x, Asteroids[i].y);
-			set_sprite_tile(3, 4);
-			laser.fired = False;
+			move_sprite((i + 4), Asteroids[i].x, Asteroids[i].y);// respawns asteroid
+			set_sprite_tile(3, 4);//changes the laser to a blown up asteroid
+			laser.fired = False;// allows laser to be fired again
 			explosion.flag = True;
 		}// end of else if	
 		i++;
 	}// end of while
 
-	if (explosion.delay == 3 && explosion.flag == True) {
+	if (explosion.delay == 3 && explosion.flag == True) {// clears laser from screen
 		laser.x = 0;
 		laser.y = 0;
-		set_sprite_tile(3, 5);
+		set_sprite_tile(3, 5);// makes the laser black (invisible)
 		explosion.delay = 0;
 		explosion.flag = False;
 	}// end of if
 	else if (explosion.flag == True) {
 		explosion.delay++;
-	}// end of else
+	}// end of else if
 
 }
 
-//NOT CONFIRMED TO WORK
 // Check if the ship/laser (Sprite_X,Sprite_Y, and extending out 8, 8) 
 //  overlap with an Asteroid (Asteroid_X,Asteroid_Y, and extending out 8, 8)
 bool collisionCheck(UINT8 Sprite_X, UINT8 Sprite_Y, UINT8 Sprite_height, UINT8 Asteroid_X, UINT8 Asteroid_Y) {
 	j = 8;
-	//	within radius to the right		 within radius to left			 within radius below			  within radius below
+	//	within radius to the right		 within radius to left			 within radius below			  within radius above
 	if ( (Sprite_X < (Asteroid_X + 8)) && ((Sprite_X + 8) > Asteroid_X) && (Sprite_Y < (Asteroid_Y + Sprite_height)) && ((Sprite_Y + Sprite_height) > Asteroid_Y) ) {
-		return True;
+		return True;// hit registered
 	}
-
 	else {
-		return False;
+		return False;// no hit
 	}
 }
